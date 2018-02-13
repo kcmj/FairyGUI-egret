@@ -14751,7 +14751,8 @@ var fairygui;
                         item.decoded = true;
                         var sprite = this._sprites[item.id];
                         if (sprite != null)
-                            item.texture = this.createSpriteTexture(sprite);
+                            //item.texture = this.createSpriteTexture(sprite);
+                            item.texture = RES.getRes(this._resKey + "_" + item.name + "_png");
                     }
                     return item.texture;
                 case fairygui.PackageItemType.Atlas:
