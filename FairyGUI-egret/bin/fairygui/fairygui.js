@@ -8026,6 +8026,16 @@ var fairygui;
             if (str)
                 this.flip = fairygui.parseFlipType(str);
         };
+        Object.defineProperty(GImage.prototype, "mask", {
+            get: function () {
+                return this._content.mask;
+            },
+            set: function (value) {
+                this._content.mask = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return GImage;
     }(fairygui.GObject));
     fairygui.GImage = GImage;
@@ -14749,10 +14759,10 @@ var fairygui;
                 case fairygui.PackageItemType.Image:
                     if (!item.decoded) {
                         item.decoded = true;
-                        var sprite = this._sprites[item.id];
-                        if (sprite != null)
-                            //item.texture = this.createSpriteTexture(sprite);
-                            item.texture = RES.getRes(this._resKey + "_" + item.name + "_png");
+                        //var sprite: AtlasSprite = this._sprites[item.id];
+                        //if (sprite != null)
+                        //item.texture = this.createSpriteTexture(sprite);
+                        item.texture = RES.getRes(this._resKey + "_" + item.name + "_png");
                     }
                     return item.texture;
                 case fairygui.PackageItemType.Atlas:

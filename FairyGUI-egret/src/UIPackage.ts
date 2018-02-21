@@ -451,10 +451,10 @@ module fairygui {
                 case PackageItemType.Image:
                     if (!item.decoded) {
                         item.decoded = true;
-                        var sprite: AtlasSprite = this._sprites[item.id];
-                        if (sprite != null)
+                        //var sprite: AtlasSprite = this._sprites[item.id];
+                        //if (sprite != null)
                             //item.texture = this.createSpriteTexture(sprite);
-                            item.texture = RES.getRes(this._resKey + "_" + item.name + "_png");
+                        item.texture = RES.getRes(this._resKey + "_" + item.name + "_png");
                     }
                     return item.texture;
 

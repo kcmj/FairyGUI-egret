@@ -143,5 +143,12 @@ module fairygui {
             if (str)
                 this.flip = parseFlipType(str);
         }
+
+        get mask(): egret.DisplayObject | egret.Rectangle {
+            return this._content.mask
+        }
+        set mask(value: egret.DisplayObject | egret.Rectangle) {
+            this._content.mask = value;
+        }
     }
 }

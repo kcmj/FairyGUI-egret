@@ -1148,6 +1148,7 @@ declare module fairygui {
         protected handleXYChanged(): void;
         protected handleSizeChanged(): void;
         setup_beforeAdd(xml: any): void;
+        mask: egret.DisplayObject | egret.Rectangle;
     }
 }
 declare module fairygui {
