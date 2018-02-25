@@ -473,7 +473,7 @@ declare module fairygui {
         constructor();
         clear(): void;
         readonly count: number;
-        getObject(url: string): GObject;
+        getObject(url: string, userClass?: any): GObject;
         returnObject(obj: GObject): void;
     }
 }
@@ -503,6 +503,7 @@ declare module fairygui {
         protected _bitmapPool: Array<egret.Bitmap>;
         protected static GUTTER_X: number;
         protected static GUTTER_Y: number;
+        textParser: Function;
         constructor();
         protected createDisplayObject(): void;
         private switchBitmapMode(val);
@@ -942,6 +943,7 @@ declare module fairygui {
         private _downEffect;
         private _downEffectValue;
         private _downScaled;
+        private _disabled;
         private _down;
         private _over;
         static UP: string;
@@ -961,6 +963,7 @@ declare module fairygui {
         sound: string;
         soundVolumeScale: number;
         selected: boolean;
+        disabled: boolean;
         mode: ButtonMode;
         relatedController: Controller;
         readonly pageOption: PageOption;
@@ -1173,6 +1176,7 @@ declare module fairygui {
         * itemRenderer(number number, GObject item);
         */
         itemRenderer: Function;
+        private _itemClass;
         /**
          * itemProvider(index:number):string;
         */
@@ -1206,6 +1210,8 @@ declare module fairygui {
         private _eventLocked;
         constructor();
         dispose(): void;
+        clearItemPool(): void;
+        itemClass: any;
         layout: ListLayoutType;
         lineCount: number;
         columnCount: number;
@@ -1306,7 +1312,9 @@ declare module fairygui {
         private _errorSign;
         private _updatingLayout;
         private static _errorSignPool;
+        private _matrix;
         constructor();
+        private getColorMatrix();
         protected createDisplayObject(): void;
         dispose(): void;
         url: string;
@@ -1476,6 +1484,7 @@ declare module fairygui {
         static workCount: number;
         static inst: GTimers;
         private static FPS24;
+        private static FPS30;
         constructor();
         private getItem();
         private findItem(callback, thisObj);
@@ -1483,6 +1492,8 @@ declare module fairygui {
         callLater(callback: Function, thisObj: any, callbackParam?: any): void;
         callDelay(delay: number, callback: Function, thisObj: any, callbackParam?: any): void;
         callBy24Fps(callback: Function, thisObj: any, callbackParam?: any): void;
+        waitTime(delay: number): Promise<any>;
+        wait30FpsFrame(delay: number): Promise<any>;
         exists(callback: Function, thisObj: any): boolean;
         remove(callback: Function, thisObj: any): void;
         private __timer(timeStamp);

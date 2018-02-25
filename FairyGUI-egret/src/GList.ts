@@ -6,6 +6,7 @@ module fairygui {
         * itemRenderer(number number, GObject item);
         */
         public itemRenderer: Function;
+        private _itemClass: any;
         /**
          * itemProvider(index:number):string;
         */
@@ -63,6 +64,15 @@ module fairygui {
         public dispose(): void {
             this._pool.clear();
             super.dispose();
+        }
+
+        public clearItemPool() {
+            this._pool.clear();
+        }
+
+        public set itemClass(clazz:any) {
+            this._itemClass = clazz;
+            this.clearItemPool();
         }
 
         public get layout(): ListLayoutType {
@@ -214,7 +224,7 @@ module fairygui {
             if (!url)
                 url = this._defaultItem;
 
-            var obj: GObject = this._pool.getObject(url);
+            var obj: GObject = this._pool.getObject(url, this._itemClass);
             if (obj != null)
                 obj.visible = true;
             return obj;
@@ -242,7 +252,7 @@ module fairygui {
             if (!url)
                 url = this._defaultItem;
 
-            return this.addChild(UIPackage.createObjectFromURL(url));
+            return this.addChild(UIPackage.createObjectFromURL(url, this._itemClass));
         }
 
         public addItemFromPool(url: string = null): GObject {
@@ -1450,7 +1460,7 @@ module fairygui {
                         this.setChildIndex(ii.obj, forward ? curIndex - newFirstIndex : this.numChildren);
                     }
                     else {
-                        ii.obj = this._pool.getObject(url);
+                        ii.obj = this._pool.getObject(url, this._itemClass);
                         if (forward)
                             this.addChildAt(ii.obj, curIndex - newFirstIndex);
                         else
@@ -1602,7 +1612,7 @@ module fairygui {
                         this.setChildIndex(ii.obj, forward ? curIndex - newFirstIndex : this.numChildren);
                     }
                     else {
-                        ii.obj = this._pool.getObject(url);
+                        ii.obj = this._pool.getObject(url, this._itemClass);
                         if (forward)
                             this.addChildAt(ii.obj, curIndex - newFirstIndex);
                         else
@@ -1753,7 +1763,7 @@ module fairygui {
                             url = UIPackage.normalizeURL(url);
                         }
 
-                        ii.obj = this._pool.getObject(url);
+                        ii.obj = this._pool.getObject(url, this._itemClass);
                         this.addChildAt(ii.obj, insertIndex);
                     }
                     else {

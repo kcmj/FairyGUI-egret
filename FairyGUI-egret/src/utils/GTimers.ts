@@ -16,6 +16,7 @@ module fairygui {
         public static inst: GTimers = new GTimers();
 
         private static FPS24: number = 1000 / 24;
+        private static FPS30: number = 1000 / 30;
 
         public constructor() {
             this._items = new Array<TimerItem>();
@@ -69,6 +70,22 @@ module fairygui {
 
         public callBy24Fps(callback: Function, thisObj: any, callbackParam: any = null): void {
             this.add(GTimers.FPS24, 0, callback, thisObj, callbackParam);
+        }
+
+        public waitTime(delay: number): Promise<any> {
+            return new Promise<any>(resolve => {
+                this.add(delay, 1, ()=>{
+                    resolve();
+                }, this);
+            });
+        }
+
+        public wait30FpsFrame(delay: number): Promise<any> {
+            return new Promise<any>(resolve => {
+                this.add(GTimers.FPS24 * delay, 1, ()=>{
+                    resolve();
+                }, this);
+            });
         }
 
         public exists(callback: Function, thisObj: any): boolean {

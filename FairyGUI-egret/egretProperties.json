@@ -6,11 +6,14 @@
 			"name": "egret"
 		},
 		{
-			"name": "res"
+			"name": "assetsmanager"
 		},
 		{
 			"name": "tween"
 		},
+		{
+      		"name": "promise"
+    	},
 		{
 			"name": "rawinflate",
 			"path": "./libs/rawinflate"

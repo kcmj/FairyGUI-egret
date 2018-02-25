@@ -29,6 +29,8 @@ module fairygui {
 
         private static _errorSignPool: GObjectPool = new GObjectPool();
 
+        private _matrix: egret.ColorMatrixFilter;
+
         public constructor() {
             super();
             this._playing = true;
@@ -41,6 +43,26 @@ module fairygui {
 
             this._gearAnimation = new GearAnimation(this);
             this._gearColor = new GearColor(this);
+        }
+
+        private getColorMatrix(): egret.ColorMatrixFilter {
+            if (this._matrix)
+                return this._matrix;
+            var filters: egret.Filter[] = this.filters;
+            if (filters) {
+                for (var i: number = 0; i < filters.length; i++) {
+                    if (egret.is(filters[i], "egret.ColorMatrixFilter")) {
+                        this._matrix = <egret.ColorMatrixFilter>filters[i];
+                        return this._matrix;
+                    }
+                }
+            }
+            var cmf: egret.ColorMatrixFilter = new egret.ColorMatrixFilter();
+            this._matrix = cmf;
+            filters = filters || [];
+            filters.push(cmf);
+            this.filters = filters;
+            return cmf;
         }
 
         protected createDisplayObject(): void {
@@ -165,6 +187,14 @@ module fairygui {
 
         private applyColor(): void {
             //todo:
+            if (this._content instanceof egret.Bitmap) {
+                var cfm: egret.ColorMatrixFilter = this.getColorMatrix();
+                var matrix: number[] = cfm.matrix;
+                matrix[0] = ((this._color >> 16) & 0xFF) / 255;
+                matrix[6] = ((this._color >> 8) & 0xFF) / 255;
+                matrix[12] = (this._color & 0xFF) / 255;
+                cfm.matrix = matrix;
+            }
         }
 
         public get showErrorSign(): boolean {

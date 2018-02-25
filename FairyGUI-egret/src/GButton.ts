@@ -21,6 +21,7 @@ module fairygui {
         private _downEffect: number;
         private _downEffectValue: number;
         private _downScaled: boolean;
+        private _disabled: boolean;
 
         private _down: boolean;
         private _over: boolean;
@@ -44,6 +45,7 @@ module fairygui {
             this._changeStateOnClick = true;
             this._downEffect = 0;
             this._downEffectValue = 0.8;
+            this._disabled = false;
         }
 
         public get icon(): string {
@@ -195,6 +197,26 @@ module fairygui {
 
         public get selected(): boolean {
             return this._selected;
+        }
+
+        public get disabled(): boolean {
+            return this._disabled;
+        }
+
+        public set disabled(val: boolean) {
+            if (this._disabled == val) {
+                return;
+            }
+            this._disabled = val;
+            this.touchable = !val;
+
+            if (val) {
+                if (this._buttonController.hasPage(GButton.DISABLED)) {
+                    this._buttonController.selectedPage = GButton.DISABLED;
+                }
+            } else {
+                this._buttonController.selectedPage = GButton.UP;
+            }
         }
 
         public get mode(): ButtonMode {

@@ -31,6 +31,9 @@ module fairygui {
         protected static GUTTER_X: number = 2;
         protected static GUTTER_Y: number = 2;
 
+        // (string) => egret.ITextElement[]
+        public textParser: Function;
+
         public constructor() {
             super();
 
@@ -86,10 +89,13 @@ module fairygui {
         }
 
         protected updateTextFieldText(): void {
-            if (this._ubbEnabled)
+            if (this._ubbEnabled) {
                 this._textField.textFlow = (new egret.HtmlTextParser).parser(ToolSet.parseUBB(ToolSet.encodeHTML(this._text)));
-            else
+            } else if (this.textParser) {
+                this._textField.textFlow = this.textParser(this._text);
+            } else {
                 this._textField.text = this._text;
+            }
         }
 
         public get text(): string {

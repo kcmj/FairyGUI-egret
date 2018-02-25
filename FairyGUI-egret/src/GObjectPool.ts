@@ -25,7 +25,7 @@ module fairygui {
             return this._count;
         }
 
-        public getObject(url: string): GObject {
+        public getObject(url: string, userClass: any = null): GObject {
             url = UIPackage.normalizeURL(url);
             if (url == null)
                 return null;
@@ -36,7 +36,7 @@ module fairygui {
                 return arr.shift();
             }
 
-            var child: GObject = UIPackage.createObjectFromURL(url);
+            var child: GObject = UIPackage.createObjectFromURL(url, userClass);
             return child;
         }
 

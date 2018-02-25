@@ -3008,7 +3008,8 @@ var fairygui;
             enumerable: true,
             configurable: true
         });
-        GObjectPool.prototype.getObject = function (url) {
+        GObjectPool.prototype.getObject = function (url, userClass) {
+            if (userClass === void 0) { userClass = null; }
             url = fairygui.UIPackage.normalizeURL(url);
             if (url == null)
                 return null;
@@ -3017,7 +3018,7 @@ var fairygui;
                 this._count--;
                 return arr.shift();
             }
-            var child = fairygui.UIPackage.createObjectFromURL(url);
+            var child = fairygui.UIPackage.createObjectFromURL(url, userClass);
             return child;
         };
         GObjectPool.prototype.returnObject = function (obj) {
@@ -3099,10 +3100,15 @@ var fairygui;
             configurable: true
         });
         GTextField.prototype.updateTextFieldText = function () {
-            if (this._ubbEnabled)
+            if (this._ubbEnabled) {
                 this._textField.textFlow = (new egret.HtmlTextParser).parser(fairygui.ToolSet.parseUBB(fairygui.ToolSet.encodeHTML(this._text)));
-            else
+            }
+            else if (this.textParser) {
+                this._textField.textFlow = this.textParser(this._text);
+            }
+            else {
                 this._textField.text = this._text;
+            }
         };
         Object.defineProperty(GTextField.prototype, "font", {
             get: function () {
@@ -6182,6 +6188,7 @@ var fairygui;
             _this._changeStateOnClick = true;
             _this._downEffect = 0;
             _this._downEffectValue = 0.8;
+            _this._disabled = false;
             return _this;
         }
         Object.defineProperty(GButton.prototype, "icon", {
@@ -6349,6 +6356,28 @@ var fairygui;
                         else if (this._mode == fairygui.ButtonMode.Check && this._relatedController.selectedPageId == this._pageOption.id)
                             this._relatedController.oppositePageId = this._pageOption.id;
                     }
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GButton.prototype, "disabled", {
+            get: function () {
+                return this._disabled;
+            },
+            set: function (val) {
+                if (this._disabled == val) {
+                    return;
+                }
+                this._disabled = val;
+                this.touchable = !val;
+                if (val) {
+                    if (this._buttonController.hasPage(GButton.DISABLED)) {
+                        this._buttonController.selectedPage = GButton.DISABLED;
+                    }
+                }
+                else {
+                    this._buttonController.selectedPage = GButton.UP;
                 }
             },
             enumerable: true,
@@ -8234,6 +8263,17 @@ var fairygui;
             this._pool.clear();
             _super.prototype.dispose.call(this);
         };
+        GList.prototype.clearItemPool = function () {
+            this._pool.clear();
+        };
+        Object.defineProperty(GList.prototype, "itemClass", {
+            set: function (clazz) {
+                this._itemClass = clazz;
+                this.clearItemPool();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(GList.prototype, "layout", {
             get: function () {
                 return this._layout;
@@ -8410,7 +8450,7 @@ var fairygui;
             if (url === void 0) { url = null; }
             if (!url)
                 url = this._defaultItem;
-            var obj = this._pool.getObject(url);
+            var obj = this._pool.getObject(url, this._itemClass);
             if (obj != null)
                 obj.visible = true;
             return obj;
@@ -8434,7 +8474,7 @@ var fairygui;
             if (url === void 0) { url = null; }
             if (!url)
                 url = this._defaultItem;
-            return this.addChild(fairygui.UIPackage.createObjectFromURL(url));
+            return this.addChild(fairygui.UIPackage.createObjectFromURL(url, this._itemClass));
         };
         GList.prototype.addItemFromPool = function (url) {
             if (url === void 0) { url = null; }
@@ -9522,7 +9562,7 @@ var fairygui;
                         this.setChildIndex(ii.obj, forward ? curIndex - newFirstIndex : this.numChildren);
                     }
                     else {
-                        ii.obj = this._pool.getObject(url);
+                        ii.obj = this._pool.getObject(url, this._itemClass);
                         if (forward)
                             this.addChildAt(ii.obj, curIndex - newFirstIndex);
                         else
@@ -9654,7 +9694,7 @@ var fairygui;
                         this.setChildIndex(ii.obj, forward ? curIndex - newFirstIndex : this.numChildren);
                     }
                     else {
-                        ii.obj = this._pool.getObject(url);
+                        ii.obj = this._pool.getObject(url, this._itemClass);
                         if (forward)
                             this.addChildAt(ii.obj, curIndex - newFirstIndex);
                         else
@@ -9779,7 +9819,7 @@ var fairygui;
                                 url = this._defaultItem;
                             url = fairygui.UIPackage.normalizeURL(url);
                         }
-                        ii.obj = this._pool.getObject(url);
+                        ii.obj = this._pool.getObject(url, this._itemClass);
                         this.addChildAt(ii.obj, insertIndex);
                     }
                     else {
@@ -10342,6 +10382,25 @@ var fairygui;
             _this._gearColor = new fairygui.GearColor(_this);
             return _this;
         }
+        GLoader.prototype.getColorMatrix = function () {
+            if (this._matrix)
+                return this._matrix;
+            var filters = this.filters;
+            if (filters) {
+                for (var i = 0; i < filters.length; i++) {
+                    if (egret.is(filters[i], "egret.ColorMatrixFilter")) {
+                        this._matrix = filters[i];
+                        return this._matrix;
+                    }
+                }
+            }
+            var cmf = new egret.ColorMatrixFilter();
+            this._matrix = cmf;
+            filters = filters || [];
+            filters.push(cmf);
+            this.filters = filters;
+            return cmf;
+        };
         GLoader.prototype.createDisplayObject = function () {
             this._container = new fairygui.UIContainer();
             this._container["$owner"] = this;
@@ -10478,6 +10537,14 @@ var fairygui;
         });
         GLoader.prototype.applyColor = function () {
             //todo:
+            if (this._content instanceof egret.Bitmap) {
+                var cfm = this.getColorMatrix();
+                var matrix = cfm.matrix;
+                matrix[0] = ((this._color >> 16) & 0xFF) / 255;
+                matrix[6] = ((this._color >> 8) & 0xFF) / 255;
+                matrix[12] = (this._color & 0xFF) / 255;
+                cfm.matrix = matrix;
+            }
         };
         Object.defineProperty(GLoader.prototype, "showErrorSign", {
             get: function () {
@@ -11565,6 +11632,22 @@ var fairygui;
             if (callbackParam === void 0) { callbackParam = null; }
             this.add(GTimers.FPS24, 0, callback, thisObj, callbackParam);
         };
+        GTimers.prototype.waitTime = function (delay) {
+            var _this = this;
+            return new Promise(function (resolve) {
+                _this.add(delay, 1, function () {
+                    resolve();
+                }, _this);
+            });
+        };
+        GTimers.prototype.wait30FpsFrame = function (delay) {
+            var _this = this;
+            return new Promise(function (resolve) {
+                _this.add(GTimers.FPS24 * delay, 1, function () {
+                    resolve();
+                }, _this);
+            });
+        };
         GTimers.prototype.exists = function (callback, thisObj) {
             var item = this.findItem(callback, thisObj);
             return item != null;
@@ -11614,6 +11697,7 @@ var fairygui;
         GTimers.workCount = 0;
         GTimers.inst = new GTimers();
         GTimers.FPS24 = 1000 / 24;
+        GTimers.FPS30 = 1000 / 30;
         return GTimers;
     }());
     fairygui.GTimers = GTimers;
