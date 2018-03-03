@@ -82,7 +82,7 @@ module fairygui {
 
         public wait30FpsFrame(delay: number): Promise<any> {
             return new Promise<any>(resolve => {
-                this.add(GTimers.FPS24 * delay, 1, ()=>{
+                this.add(GTimers.FPS30 * delay, 1, ()=>{
                     resolve();
                 }, this);
             });

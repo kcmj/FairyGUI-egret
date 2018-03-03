@@ -11290,9 +11290,14 @@ var fairygui;
                 pos = this.globalToLocal(GRoot.mouseX, GRoot.mouseY);
             }
             var xx, yy;
-            xx = pos.x;
-            if (xx + popup.width > this.width)
-                xx = xx + sizeW - popup.width;
+            xx = pos.x - popup.width / 2;
+            if (xx + popup.width > this.width) {
+                //xx = xx + sizeW - popup.width;
+                xx = this.width - popup.width - 1;
+            }
+            else if (xx < 0) {
+                xx = 1;
+            }
             yy = pos.y + sizeH;
             if ((downward == null && yy + popup.height > this.height)
                 || downward == false) {
@@ -11643,7 +11648,7 @@ var fairygui;
         GTimers.prototype.wait30FpsFrame = function (delay) {
             var _this = this;
             return new Promise(function (resolve) {
-                _this.add(GTimers.FPS24 * delay, 1, function () {
+                _this.add(GTimers.FPS30 * delay, 1, function () {
                     resolve();
                 }, _this);
             });
