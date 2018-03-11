@@ -3665,6 +3665,8 @@ var fairygui;
             str = xml.attributes.font;
             if (str)
                 this._font = str;
+            // TODO
+            this._font = "AaKaiTi";
             str = xml.attributes.fontSize;
             if (str)
                 this._fontSize = parseInt(str);
@@ -8077,6 +8079,18 @@ var fairygui;
         function GLabel() {
             return _super.call(this) || this;
         }
+        Object.defineProperty(GLabel.prototype, "textParser", {
+            /**
+             *  (string) => egret.ITextElement[]
+             */
+            set: function (parser) {
+                if (this._titleObject && this._titleObject instanceof fairygui.GTextField) {
+                    this._titleObject.textParser = parser;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(GLabel.prototype, "icon", {
             get: function () {
                 if (this._iconObject != null)
@@ -8484,6 +8498,9 @@ var fairygui;
             if (dispose === void 0) { dispose = false; }
             var child = _super.prototype.removeChildAt.call(this, index, dispose);
             child.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.__clickItem, this);
+            if (this.removeItemCallback) {
+                this.removeItemCallback.call(this.callbackThisObj, index, child);
+            }
             return child;
         };
         GList.prototype.removeChildToPoolAt = function (index) {
@@ -11290,7 +11307,7 @@ var fairygui;
                 pos = this.globalToLocal(GRoot.mouseX, GRoot.mouseY);
             }
             var xx, yy;
-            xx = pos.x - popup.width / 2;
+            xx = pos.x - popup.width / 2 + sizeW / 2;
             if (xx + popup.width > this.width) {
                 //xx = xx + sizeW - popup.width;
                 xx = this.width - popup.width - 1;
@@ -13386,13 +13403,14 @@ var fairygui;
                     page++;
                 return page;
             },
-            set: function (value) {
-                if (this._pageMode && this._xOverlap > 0)
-                    this.setPosX(value * this._pageSizeH, false);
-            },
             enumerable: true,
             configurable: true
         });
+        ScrollPane.prototype.setCurrentPageX = function (value, ani) {
+            if (ani === void 0) { ani = false; }
+            if (this._pageMode && this._xOverlap > 0)
+                this.setPosX(value * this._pageSizeH, ani);
+        };
         Object.defineProperty(ScrollPane.prototype, "currentPageY", {
             get: function () {
                 if (!this._pageMode)
@@ -13402,13 +13420,14 @@ var fairygui;
                     page++;
                 return page;
             },
-            set: function (value) {
-                if (this._pageMode && this._yOverlap > 0)
-                    this.setPosY(value * this._pageSizeV, false);
-            },
             enumerable: true,
             configurable: true
         });
+        ScrollPane.prototype.setCurrentPageY = function (value, ani) {
+            if (ani === void 0) { ani = false; }
+            if (this._pageMode && this._yOverlap > 0)
+                this.setPosY(value * this._pageSizeV, ani);
+        };
         Object.defineProperty(ScrollPane.prototype, "pageController", {
             get: function () {
                 return this._pageController;
@@ -13596,9 +13615,9 @@ var fairygui;
         ScrollPane.prototype.handleControllerChanged = function (c) {
             if (this._pageController == c) {
                 if (this._scrollType == fairygui.ScrollType.Horizontal)
-                    this.currentPageX = c.selectedIndex;
+                    this.setCurrentPageX(c.selectedIndex, true);
                 else
-                    this.currentPageY = c.selectedIndex;
+                    this.setCurrentPageY(c.selectedIndex, true);
             }
         };
         ScrollPane.prototype.updatePageController = function () {

@@ -311,9 +311,9 @@ module fairygui {
             return page;
         }
 
-        public set currentPageX(value: number) {
+        public setCurrentPageX(value: number, ani:boolean=false) {
             if (this._pageMode && this._xOverlap > 0)
-                this.setPosX(value * this._pageSizeH, false);
+                this.setPosX(value * this._pageSizeH, ani);
         }
 
         public get currentPageY(): number {
@@ -327,9 +327,9 @@ module fairygui {
             return page;
         }
 
-        public set currentPageY(value: number) {
+        public setCurrentPageY(value: number, ani:boolean=false) {
             if (this._pageMode && this._yOverlap > 0)
-                this.setPosY(value * this._pageSizeV, false);
+                this.setPosY(value * this._pageSizeV, ani);
         }
 
         public get pageController(): Controller {
@@ -511,9 +511,9 @@ module fairygui {
         public handleControllerChanged(c: Controller): void {
             if (this._pageController == c) {
                 if (this._scrollType == ScrollType.Horizontal)
-                    this.currentPageX = c.selectedIndex;
+                    this.setCurrentPageX(c.selectedIndex, true);
                 else
-                    this.currentPageY = c.selectedIndex;
+                    this.setCurrentPageY(c.selectedIndex, true);
             }
         }
 

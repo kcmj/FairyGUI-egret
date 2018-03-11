@@ -31,7 +31,9 @@ module fairygui {
         protected static GUTTER_X: number = 2;
         protected static GUTTER_Y: number = 2;
 
-        // (string) => egret.ITextElement[]
+        /**
+         *  (string) => egret.ITextElement[]
+         */
         public textParser: Function;
 
         public constructor() {
@@ -672,6 +674,8 @@ module fairygui {
             str = xml.attributes.font;
             if (str)
                 this._font = str;
+            // TODO
+            this._font = "AaKaiTi";
 
             str = xml.attributes.fontSize;
             if (str)

@@ -4,9 +4,19 @@ module fairygui {
     export class GLabel extends GComponent {
         protected _titleObject: GObject;
         protected _iconObject: GObject;
+        private _textParser: Function;
 
         public constructor() {
             super();
+        }
+
+        /**
+         *  (string) => egret.ITextElement[]
+         */
+        public set textParser(parser:Function) {
+            if (this._titleObject && this._titleObject instanceof GTextField) {
+                (<GTextField>this._titleObject).textParser = parser;
+            } 
         }
 
         public get icon(): string {

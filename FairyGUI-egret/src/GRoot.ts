@@ -180,7 +180,7 @@ module fairygui {
                 pos = this.globalToLocal(GRoot.mouseX, GRoot.mouseY);
             }
             var xx: number, yy: number;
-            xx = pos.x - popup.width / 2;
+            xx = pos.x - popup.width / 2 + sizeW / 2;
             if (xx + popup.width > this.width) {
                 //xx = xx + sizeW - popup.width;
                 xx = this.width - popup.width - 1;

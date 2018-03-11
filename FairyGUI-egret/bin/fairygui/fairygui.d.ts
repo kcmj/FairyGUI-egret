@@ -503,6 +503,9 @@ declare module fairygui {
         protected _bitmapPool: Array<egret.Bitmap>;
         protected static GUTTER_X: number;
         protected static GUTTER_Y: number;
+        /**
+         *  (string) => egret.ITextElement[]
+         */
         textParser: Function;
         constructor();
         protected createDisplayObject(): void;
@@ -1158,7 +1161,12 @@ declare module fairygui {
     class GLabel extends GComponent {
         protected _titleObject: GObject;
         protected _iconObject: GObject;
+        private _textParser;
         constructor();
+        /**
+         *  (string) => egret.ITextElement[]
+         */
+        textParser: Function;
         icon: string;
         title: string;
         text: string;
@@ -1182,6 +1190,7 @@ declare module fairygui {
         */
         itemProvider: Function;
         callbackThisObj: any;
+        removeItemCallback: Function;
         scrollItemToViewOnClick: boolean;
         foldInvisibleItems: boolean;
         private _layout;
@@ -1763,8 +1772,10 @@ declare module fairygui {
         setPosY(value: number, ani?: boolean): void;
         readonly isBottomMost: boolean;
         readonly isRightMost: boolean;
-        currentPageX: number;
-        currentPageY: number;
+        readonly currentPageX: number;
+        setCurrentPageX(value: number, ani?: boolean): void;
+        readonly currentPageY: number;
+        setCurrentPageY(value: number, ani?: boolean): void;
         pageController: Controller;
         readonly scrollingPosX: number;
         readonly scrollingPosY: number;

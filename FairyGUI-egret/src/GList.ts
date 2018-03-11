@@ -12,6 +12,7 @@ module fairygui {
         */
         public itemProvider: Function;
         public callbackThisObj: any;
+        public removeItemCallback: Function;
 
         public scrollItemToViewOnClick: boolean = true;
         public foldInvisibleItems: boolean = false;
@@ -262,7 +263,9 @@ module fairygui {
         public removeChildAt(index: number, dispose: boolean = false): GObject {
             var child: GObject = super.removeChildAt(index, dispose);
             child.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.__clickItem, this);
-
+            if (this.removeItemCallback) {
+                this.removeItemCallback.call(this.callbackThisObj, index, child);
+            }
             return child;
         }
 
