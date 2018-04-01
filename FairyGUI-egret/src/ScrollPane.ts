@@ -774,6 +774,10 @@ module fairygui {
             }
         }
 
+        public isInScrollAni(): boolean {
+            return this._aniFlag == 1;
+        }
+
         private killTween(): void {
             if (this._tweening == 1) {
                 this._tweener.setPaused(true);

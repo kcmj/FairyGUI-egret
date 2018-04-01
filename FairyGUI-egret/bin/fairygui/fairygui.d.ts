@@ -1497,7 +1497,7 @@ declare module fairygui {
         constructor();
         private getItem();
         private findItem(callback, thisObj);
-        add(delayInMiniseconds: number, repeat: number, callback: Function, thisObj: any, callbackParam?: any): void;
+        add(delayInMiniseconds: number, repeat: number, callback: Function, thisObj: any, ...callbackParam: any[]): void;
         callLater(callback: Function, thisObj: any, callbackParam?: any): void;
         callDelay(delay: number, callback: Function, thisObj: any, callbackParam?: any): void;
         callBy24Fps(callback: Function, thisObj: any, callbackParam?: any): void;
@@ -1804,6 +1804,7 @@ declare module fairygui {
         private handleSizeChanged(onScrolling?);
         private validateHolderPos();
         private posChanged(ani);
+        isInScrollAni(): boolean;
         private killTween();
         private refresh();
         private refresh2();

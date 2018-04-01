@@ -11626,13 +11626,16 @@ var fairygui;
             }
             return null;
         };
-        GTimers.prototype.add = function (delayInMiniseconds, repeat, callback, thisObj, callbackParam) {
-            if (callbackParam === void 0) { callbackParam = null; }
+        GTimers.prototype.add = function (delayInMiniseconds, repeat, callback, thisObj) {
+            var callbackParam = [];
+            for (var _i = 4; _i < arguments.length; _i++) {
+                callbackParam[_i - 4] = arguments[_i];
+            }
             var item = this.findItem(callback, thisObj);
             if (!item) {
                 item = this.getItem();
                 item.callback = callback;
-                item.hasParam = callback.length == 1;
+                //item.hasParam = callback.length >= 1;
                 item.thisObj = thisObj;
                 this._items.push(item);
             }
@@ -11702,8 +11705,8 @@ var fairygui;
                         this._enumCount--;
                         this._items.splice(this._enumI, 1);
                     }
-                    if (item.hasParam)
-                        item.callback.call(item.thisObj, item.param);
+                    if (item.param)
+                        (_a = item.callback).call.apply(_a, [item.thisObj].concat(item.param));
                     else
                         item.callback.call(item.thisObj);
                     if (item.end) {
@@ -11713,6 +11716,7 @@ var fairygui;
                 }
             }
             return false;
+            var _a;
         };
         GTimers.deltaTime = 0;
         GTimers.time = 0;
@@ -13843,6 +13847,9 @@ var fairygui;
             if (this._tweening == 2) {
                 this.killTween();
             }
+        };
+        ScrollPane.prototype.isInScrollAni = function () {
+            return this._aniFlag == 1;
         };
         ScrollPane.prototype.killTween = function () {
             if (this._tweening == 1) {

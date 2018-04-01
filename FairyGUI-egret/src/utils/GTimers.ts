@@ -44,12 +44,12 @@ module fairygui {
             return null;
         }
 
-        public add(delayInMiniseconds: number, repeat: number, callback: Function, thisObj: any, callbackParam: any = null): void {
+        public add(delayInMiniseconds: number, repeat: number, callback: Function, thisObj: any, ...callbackParam: any[]): void {
             var item: TimerItem = this.findItem(callback, thisObj);
             if (!item) {
                 item = this.getItem();
                 item.callback = callback;
-                item.hasParam = callback.length == 1;
+                //item.hasParam = callback.length >= 1;
                 item.thisObj = thisObj;
                 this._items.push(item);
             }
@@ -128,8 +128,8 @@ module fairygui {
                         this._items.splice(this._enumI, 1);
                     }
 
-                    if (item.hasParam)
-                        item.callback.call(item.thisObj, item.param);
+                    if (item.param)
+                        item.callback.call(item.thisObj, ...item.param);
                     else
                         item.callback.call(item.thisObj);
 
@@ -151,7 +151,7 @@ module fairygui {
         public repeat: number = 0;
         public callback: Function;
         public thisObj: any;
-        public param: any;
+        public param: any[];
 
         public hasParam: boolean;
         public end: boolean;
