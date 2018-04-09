@@ -236,6 +236,7 @@ declare module fairygui {
         ScaleMatchHeight = 2,
         ScaleMatchWidth = 3,
         ScaleFree = 4,
+        ScaleNoBorder = 5,
     }
     enum ListLayoutType {
         SingleColumn = 0,
@@ -432,7 +433,7 @@ declare module fairygui {
         mask: egret.DisplayObject | egret.Rectangle;
         protected updateOpaque(): void;
         protected updateScrollRect(): void;
-        protected setupScroll(scrollBarMargin: Margin, scroll: ScrollType, scrollBarDisplay: ScrollBarDisplayType, flags: number, vtScrollBarRes: string, hzScrollBarRes: string): void;
+        protected setupScroll(scrollBarMargin: Margin, scroll: ScrollType, scrollBarDisplay: ScrollBarDisplayType, flags: number, vtScrollBarRes: string, hzScrollBarRes: string, headerRes: string, footerRes: string): void;
         protected setupOverflow(overflow: OverflowType): void;
         protected handleSizeChanged(): void;
         protected handleGrayedChanged(): void;
@@ -639,6 +640,7 @@ declare module fairygui {
         changing: boolean;
         private static _nextPageId;
         constructor();
+        dispose(): void;
         name: string;
         readonly parent: GComponent;
         selectedIndex: number;
@@ -684,6 +686,7 @@ declare module fairygui {
         static parseUBB(text: string): string;
         static clamp(value: number, min: number, max: number): number;
         static clamp01(value: number): number;
+        static lerp(start: number, end: number, percent: number): number;
     }
 }
 declare module fairygui {
@@ -1217,6 +1220,8 @@ declare module fairygui {
         private _virtualListChanged;
         private _virtualItems;
         private _eventLocked;
+        private itemInfoVer;
+        private enterCounter;
         constructor();
         dispose(): void;
         clearItemPool(): void;
@@ -1278,12 +1283,12 @@ declare module fairygui {
         private getIndexOnPos2(forceUpdate);
         private getIndexOnPos3(forceUpdate);
         private handleScroll(forceUpdate);
-        private static itemInfoVer;
-        private static enterCounter;
         private static pos_param;
         private handleScroll1(forceUpdate);
         private handleScroll2(forceUpdate);
         private handleScroll3(forceUpdate);
+        private handleArchOrder1();
+        private handleArchOrder2();
         private handleAlign(contentWidth, contentHeight);
         protected updateBounds(): void;
         setup_beforeAdd(xml: any): void;
@@ -1704,56 +1709,58 @@ declare module fairygui {
 declare module fairygui {
     class ScrollPane extends egret.EventDispatcher {
         private _owner;
-        private _maskContainer;
         private _container;
+        private _maskContainer;
         private _alignContainer;
-        private _viewWidth;
-        private _viewHeight;
-        private _contentWidth;
-        private _contentHeight;
         private _scrollType;
-        private _scrollSpeed;
-        private _mouseWheelSpeed;
+        private _scrollStep;
+        private _mouseWheelStep;
+        private _decelerationRate;
         private _scrollBarMargin;
         private _bouncebackEffect;
         private _touchEffect;
         private _scrollBarDisplayAuto;
         private _vScrollNone;
         private _hScrollNone;
+        private _needRefresh;
+        private _refreshBarAxis;
         private _displayOnLeft;
         private _snapToItem;
         private _displayInDemand;
         private _mouseWheelEnabled;
         private _pageMode;
-        private _pageSizeH;
-        private _pageSizeV;
         private _inertiaDisabled;
-        private _yPerc;
-        private _xPerc;
+        private _maskDisabled;
         private _xPos;
         private _yPos;
-        private _xOverlap;
-        private _yOverlap;
-        private static _easeTypeFunc;
-        private _throwTween;
-        private _tweening;
-        private _tweener;
-        private _time1;
-        private _time2;
-        private _y1;
-        private _y2;
-        private _xOffset;
-        private _yOffset;
-        private _x1;
-        private _x2;
-        private _needRefresh;
-        private _holdAreaPoint;
+        private _viewSize;
+        private _contentSize;
+        private _overlapSize;
+        private _pageSize;
+        private _containerPos;
+        private _beginTouchPos;
+        private _lastTouchPos;
+        private _lastTouchGlobalPos;
+        private _velocity;
+        private _velocityScale;
+        private _lastMoveTime;
         private _isHoldAreaDone;
         private _aniFlag;
         private _scrollBarVisible;
+        _loop: number;
+        private _headerLockedSize;
+        private _footerLockedSize;
+        private _refreshEventDispatching;
+        private _tweening;
+        private _tweenTime;
+        private _tweenDuration;
+        private _tweenStart;
+        private _tweenChange;
         private _pageController;
         private _hzScrollBar;
         private _vtScrollBar;
+        private _header;
+        private _footer;
         isDragged: boolean;
         static draggingPane: ScrollPane;
         private static _gestureFlag;
@@ -1761,12 +1768,24 @@ declare module fairygui {
         static SCROLL_END: string;
         static PULL_DOWN_RELEASE: string;
         static PULL_UP_RELEASE: string;
+        static TWEEN_TIME_GO: number;
+        static TWEEN_TIME_DEFAULT: number;
+        static PULL_RATIO: number;
+        private static sHelperPoint;
         private static sHelperRect;
-        constructor(owner: GComponent, scrollType: number, scrollBarMargin: Margin, scrollBarDisplay: number, flags: number, vtScrollBarRes: string, hzScrollBarRes: string);
+        private static sEndPos;
+        private static sOldChange;
+        constructor(owner: GComponent, scrollType: number, scrollBarMargin: Margin, scrollBarDisplay: number, flags: number, vtScrollBarRes: string, hzScrollBarRes: string, headerRes: string, footerRes: string);
+        dispose(): void;
         readonly owner: GComponent;
+        readonly hzScrollBar: GScrollBar;
+        readonly vtScrollBar: GScrollBar;
+        readonly header: GComponent;
+        readonly footer: GComponent;
         bouncebackEffect: boolean;
         touchEffect: boolean;
-        scrollSpeed: number;
+        scrollStep: number;
+        decelerationRate: number;
         snapToItem: boolean;
         percX: number;
         setPercX(value: number, ani?: boolean): void;
@@ -1776,30 +1795,30 @@ declare module fairygui {
         setPosX(value: number, ani?: boolean): void;
         posY: number;
         setPosY(value: number, ani?: boolean): void;
-        readonly isBottomMost: boolean;
-        readonly isRightMost: boolean;
-        readonly currentPageX: number;
-        setCurrentPageX(value: number, ani?: boolean): void;
-        readonly currentPageY: number;
-        setCurrentPageY(value: number, ani?: boolean): void;
-        pageController: Controller;
-        readonly scrollingPosX: number;
-        readonly scrollingPosY: number;
         readonly contentWidth: number;
         readonly contentHeight: number;
         viewWidth: number;
         viewHeight: number;
-        private getDeltaX(move);
-        private getDeltaY(move);
+        readonly currentPageX: number;
+        setCurrentPageX(value: number, ani?: boolean): void;
+        readonly currentPageY: number;
+        setCurrentPageY(value: number, ani?: boolean): void;
+        readonly isBottomMost: boolean;
+        readonly isRightMost: boolean;
+        pageController: Controller;
+        readonly scrollingPosX: number;
+        readonly scrollingPosY: number;
         scrollTop(ani?: boolean): void;
         scrollBottom(ani?: boolean): void;
-        scrollUp(speed?: number, ani?: boolean): void;
-        scrollDown(speed?: number, ani?: boolean): void;
-        scrollLeft(speed?: number, ani?: boolean): void;
-        scrollRight(speed?: number, ani?: boolean): void;
+        scrollUp(ratio?: number, ani?: boolean): void;
+        scrollDown(ratio?: number, ani?: boolean): void;
+        scrollLeft(ratio?: number, ani?: boolean): void;
+        scrollRight(ratio?: number, ani?: boolean): void;
         scrollToView(target: any, ani?: boolean, setFirst?: boolean): void;
         isChildInView(obj: GObject): boolean;
         cancelDragging(): void;
+        lockHeader(size: number): void;
+        lockFooter(size: number): void;
         onOwnerSizeChanged(): void;
         handleControllerChanged(c: Controller): void;
         private updatePageController();
@@ -1808,16 +1827,11 @@ declare module fairygui {
         setContentSize(aWidth: number, aHeight: number): void;
         changeContentSizeOnScrolling(deltaWidth: number, deltaHeight: number, deltaPosX: number, deltaPosY: number): void;
         private handleSizeChanged(onScrolling?);
-        private validateHolderPos();
         private posChanged(ani);
-        isInScrollAni(): boolean;
-        private killTween();
         private refresh();
         private refresh2();
-        private syncPos();
         private syncScrollBar(end?);
-        private static sHelperPoint;
-        private __mouseDown(evt);
+        private __touchBegin(evt);
         private __touchMove(evt);
         private __touchEnd(evt);
         private __touchTap(evt);
@@ -1825,10 +1839,21 @@ declare module fairygui {
         private __rollOut(evt);
         private showScrollBar(val);
         private __showScrollBar(val);
-        private __tweenUpdate();
-        private __tweenComplete();
-        private __tweenUpdate2();
-        private __tweenComplete2();
+        private getLoopPartSize(division, axis);
+        private loopCheckingCurrent();
+        private loopCheckingTarget(endPos);
+        private loopCheckingTarget2(endPos, axis);
+        private loopCheckingNewPos(value, axis);
+        private alignPosition(pos, inertialScrolling);
+        private alignByPage(pos, axis, inertialScrolling);
+        private updateTargetAndDuration(orignPos, resultPos);
+        private updateTargetAndDuration2(pos, axis);
+        private fixDuration(axis, oldChange);
+        private killTween();
+        private checkRefreshBar();
+        private tweenUpdate(timestamp);
+        private runTween(axis);
+        private static easeFunc(t, d);
     }
 }
 declare module fairygui {
@@ -1843,8 +1868,8 @@ declare module fairygui {
         static buttonSoundVolumeScale: number;
         static horizontalScrollBar: string;
         static verticalScrollBar: string;
-        static defaultScrollSpeed: number;
-        static defaultTouchScrollSpeedRatio: number;
+        static defaultScrollStep: number;
+        static defaultScrollDecelerationRate: number;
         static defaultScrollBarDisplay: number;
         static defaultScrollTouchEffect: boolean;
         static defaultScrollBounceEffect: boolean;
