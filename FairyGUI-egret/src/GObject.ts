@@ -855,17 +855,30 @@ module fairygui {
             return pt;
         }
 
-        public localToRoot(ax: number = 0, ay: number = 0, resultPoint?: egret.Point): egret.Point {
+        public localToRoot(ax: number = 0, ay: number = 0, resultPoint?: egret.Point, ignorePivot:boolean=true): egret.Point {
+            if (this._pivotAsAnchor && !ignorePivot) {
+                ax += this._pivotX * this._width;
+                ay += this._pivotY * this._height;
+            }
             var pt: egret.Point = this._displayObject.localToGlobal(ax, ay, resultPoint);
+            pt.x -= GRoot.inst.x;
+            pt.y -= GRoot.inst.y;
             pt.x /= GRoot.contentScaleFactor;
             pt.y /= GRoot.contentScaleFactor;
             return pt;
         }
 
-        public rootToLocal(ax: number = 0, ay: number = 0, resultPoint?: egret.Point): egret.Point {
+        public rootToLocal(ax: number = 0, ay: number = 0, resultPoint?: egret.Point, ignorePivot:boolean=true): egret.Point {
             ax *= GRoot.contentScaleFactor;
             ay *= GRoot.contentScaleFactor;
-            return this._displayObject.globalToLocal(ax, ay, resultPoint);
+            ax += GRoot.inst.x;
+            ay += GRoot.inst.y;
+            let pt = this._displayObject.globalToLocal(ax, ay, resultPoint);
+            if (this._pivotAsAnchor && !ignorePivot) {
+                pt.x -= this._pivotX * this._width;
+                pt.y -= this._pivotY * this._height;
+            }
+            return pt;
         }
 
         public localToGlobalRect(ax: number = 0, ay: number = 0, aWidth: number = 0, aHeight: number = 0, resultRect?: egret.Rectangle): egret.Rectangle {

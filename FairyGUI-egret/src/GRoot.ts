@@ -11,6 +11,8 @@ module fairygui {
         private _tooltipWin: GObject;
         private _defaultTooltipWin: GObject;
         private _volumeScale: number;
+        private _designWidth: number;
+        private _designHeight: number;
 
         private static _inst: GRoot;
 
@@ -44,6 +46,24 @@ module fairygui {
 
         public get nativeStage(): egret.Stage {
             return this._nativeStage;
+        }
+
+        public setDesignSize(width:number, height:number) {
+            this._designWidth = width;
+            this._designHeight = height;
+            this.setSize(width, height);
+        }
+
+        public getRootMousePos(): egret.Point {
+            return this.globalToLocal(GRoot.mouseX, GRoot.mouseY);
+        }
+
+        public getDesignStageWidth():number {
+            return this._nativeStage.stageWidth / this.scaleX;
+        }
+
+        public getDesignStageHeight():number {
+            return this._nativeStage.stageHeight / this.scaleY;
         }
 
         public showWindow(win: Window): void {
@@ -372,9 +392,9 @@ module fairygui {
             this._nativeStage.addEventListener(egret.TouchEvent.TOUCH_MOVE, this.__stageMouseMoveCapture, this, true);
 
             this._modalLayer = new GGraph();
-            this._modalLayer.setSize(this.width, this.height);
+            this._modalLayer.setSize(this._nativeStage.stageWidth, this._nativeStage.stageHeight);
             this._modalLayer.drawRect(0, 0, 0, UIConfig.modalLayerColor, UIConfig.modalLayerAlpha);
-            this._modalLayer.addRelation(this, RelationType.Size);
+            //this._modalLayer.addRelation(this, RelationType.Size);
 
             this.displayObject.stage.addEventListener(egret.Event.RESIZE, this.__winResize, this);
 
@@ -443,7 +463,22 @@ module fairygui {
         }
 
         private __winResize(evt: egret.Event): void {
-            this.setSize(this._nativeStage.stageWidth, this._nativeStage.stageHeight);
+            if (!this._designWidth || !this._designHeight) {
+                this.setSize(this._nativeStage.stageWidth, this._nativeStage.stageHeight);
+            } else {
+                let scaleX = this._nativeStage.stageWidth / this.width;
+                let scaleY = this._nativeStage.stageHeight / this.height;
+                let scale = scaleX < scaleY ? scaleX: scaleY;
+                GRoot.contentScaleFactor = scale;
+                this.setScale(scale, scale);
+                this.setXY( this._nativeStage.stageWidth/2 - this.width*scale/2, 
+                    this._nativeStage.stageHeight/2 - this.height*scale/2 );
+            }
+
+            this._modalLayer.setSize(this._nativeStage.stageWidth / this.scaleX, 
+                this._nativeStage.stageHeight / this.scaleY);
+            this._modalLayer.setXY( this.width/2 - this._modalLayer.width/2, 
+                    this.height/2 - this._modalLayer.height/2 );    
 
             //console.info("screen size=" + w + "x" + h + "/" + this.width + "x" + this.height);
         }

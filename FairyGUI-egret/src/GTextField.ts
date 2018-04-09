@@ -330,7 +330,8 @@ module fairygui {
 
             this.switchBitmapMode(false);
 
-            this._textField.width = this._widthAutoSize ? 10000 : Math.ceil(this.width);
+            let autoMaxWidth = this.maxWidth > 0 ? this.maxWidth : 10000;
+            this._textField.width = this._widthAutoSize ? autoMaxWidth : Math.ceil(this.width);
             this.updateTextFieldText();
             this._textWidth = Math.ceil(this._textField.textWidth);
             if (this._textWidth > 0)

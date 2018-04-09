@@ -152,8 +152,8 @@ declare module fairygui {
         readonly dragging: boolean;
         localToGlobal(ax?: number, ay?: number, resultPoint?: egret.Point): egret.Point;
         globalToLocal(ax?: number, ay?: number, resultPoint?: egret.Point): egret.Point;
-        localToRoot(ax?: number, ay?: number, resultPoint?: egret.Point): egret.Point;
-        rootToLocal(ax?: number, ay?: number, resultPoint?: egret.Point): egret.Point;
+        localToRoot(ax?: number, ay?: number, resultPoint?: egret.Point, ignorePivot?: boolean): egret.Point;
+        rootToLocal(ax?: number, ay?: number, resultPoint?: egret.Point, ignorePivot?: boolean): egret.Point;
         localToGlobalRect(ax?: number, ay?: number, aWidth?: number, aHeight?: number, resultRect?: egret.Rectangle): egret.Rectangle;
         globalToLocalRect(ax?: number, ay?: number, aWidth?: number, aHeight?: number, resultRect?: egret.Rectangle): egret.Rectangle;
         handleControllerChanged(c: Controller): void;
@@ -1425,6 +1425,8 @@ declare module fairygui {
         private _tooltipWin;
         private _defaultTooltipWin;
         private _volumeScale;
+        private _designWidth;
+        private _designHeight;
         private static _inst;
         static touchScreen: boolean;
         static contentScaleFactor: number;
@@ -1437,6 +1439,10 @@ declare module fairygui {
         static readonly inst: GRoot;
         constructor();
         readonly nativeStage: egret.Stage;
+        setDesignSize(width: number, height: number): void;
+        getRootMousePos(): egret.Point;
+        getDesignStageWidth(): number;
+        getDesignStageHeight(): number;
         showWindow(win: Window): void;
         hideWindow(win: Window): void;
         hideWindowImmediately(win: Window): void;

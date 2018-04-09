@@ -264,13 +264,13 @@ module fairygui {
             var child: GObject = super.removeChildAt(index, dispose);
             child.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.__clickItem, this);
             if (this.removeItemCallback) {
-                this.removeItemCallback.call(this.callbackThisObj, index, child);
+                this.removeItemCallback.call(this.callbackThisObj, child);
             }
             return child;
         }
 
         public removeChildToPoolAt(index: number = 0): void {
-            var child: GObject = super.removeChildAt(index);
+            var child: GObject = this.removeChildAt(index);
             this.returnToPool(child);
         }
 

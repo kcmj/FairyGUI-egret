@@ -944,20 +944,35 @@ var fairygui;
             }
             return pt;
         };
-        GObject.prototype.localToRoot = function (ax, ay, resultPoint) {
+        GObject.prototype.localToRoot = function (ax, ay, resultPoint, ignorePivot) {
             if (ax === void 0) { ax = 0; }
             if (ay === void 0) { ay = 0; }
+            if (ignorePivot === void 0) { ignorePivot = true; }
+            if (this._pivotAsAnchor && !ignorePivot) {
+                ax += this._pivotX * this._width;
+                ay += this._pivotY * this._height;
+            }
             var pt = this._displayObject.localToGlobal(ax, ay, resultPoint);
+            pt.x -= fairygui.GRoot.inst.x;
+            pt.y -= fairygui.GRoot.inst.y;
             pt.x /= fairygui.GRoot.contentScaleFactor;
             pt.y /= fairygui.GRoot.contentScaleFactor;
             return pt;
         };
-        GObject.prototype.rootToLocal = function (ax, ay, resultPoint) {
+        GObject.prototype.rootToLocal = function (ax, ay, resultPoint, ignorePivot) {
             if (ax === void 0) { ax = 0; }
             if (ay === void 0) { ay = 0; }
+            if (ignorePivot === void 0) { ignorePivot = true; }
             ax *= fairygui.GRoot.contentScaleFactor;
             ay *= fairygui.GRoot.contentScaleFactor;
-            return this._displayObject.globalToLocal(ax, ay, resultPoint);
+            ax += fairygui.GRoot.inst.x;
+            ay += fairygui.GRoot.inst.y;
+            var pt = this._displayObject.globalToLocal(ax, ay, resultPoint);
+            if (this._pivotAsAnchor && !ignorePivot) {
+                pt.x -= this._pivotX * this._width;
+                pt.y -= this._pivotY * this._height;
+            }
+            return pt;
         };
         GObject.prototype.localToGlobalRect = function (ax, ay, aWidth, aHeight, resultRect) {
             if (ax === void 0) { ax = 0; }
@@ -3359,7 +3374,8 @@ var fairygui;
                 return;
             }
             this.switchBitmapMode(false);
-            this._textField.width = this._widthAutoSize ? 10000 : Math.ceil(this.width);
+            var autoMaxWidth = this.maxWidth > 0 ? this.maxWidth : 10000;
+            this._textField.width = this._widthAutoSize ? autoMaxWidth : Math.ceil(this.width);
             this.updateTextFieldText();
             this._textWidth = Math.ceil(this._textField.textWidth);
             if (this._textWidth > 0)
@@ -5925,9 +5941,9 @@ var fairygui;
             _this._status = 0; //0-none, 1-next loop, 2-ending, 3-ended
             _this._smoothing = true;
             //comment out below line before 5.1.0
-            _this.$renderNode = new egret.sys.NormalBitmapNode();
+            //this.$renderNode = new egret.sys.NormalBitmapNode();
             //comment out below line after 5.1.0
-            //this.$renderNode = new egret.sys.BitmapNode();
+            _this.$renderNode = new egret.sys.BitmapNode();
             _this.playState = new fairygui.PlayState();
             _this._playing = true;
             _this.touchEnabled = false;
@@ -8499,13 +8515,13 @@ var fairygui;
             var child = _super.prototype.removeChildAt.call(this, index, dispose);
             child.removeEventListener(egret.TouchEvent.TOUCH_TAP, this.__clickItem, this);
             if (this.removeItemCallback) {
-                this.removeItemCallback.call(this.callbackThisObj, index, child);
+                this.removeItemCallback.call(this.callbackThisObj, child);
             }
             return child;
         };
         GList.prototype.removeChildToPoolAt = function (index) {
             if (index === void 0) { index = 0; }
-            var child = _super.prototype.removeChildAt.call(this, index);
+            var child = this.removeChildAt(index);
             this.returnToPool(child);
         };
         GList.prototype.removeChildToPool = function (child) {
@@ -11181,6 +11197,20 @@ var fairygui;
             enumerable: true,
             configurable: true
         });
+        GRoot.prototype.setDesignSize = function (width, height) {
+            this._designWidth = width;
+            this._designHeight = height;
+            this.setSize(width, height);
+        };
+        GRoot.prototype.getRootMousePos = function () {
+            return this.globalToLocal(GRoot.mouseX, GRoot.mouseY);
+        };
+        GRoot.prototype.getDesignStageWidth = function () {
+            return this._nativeStage.stageWidth / this.scaleX;
+        };
+        GRoot.prototype.getDesignStageHeight = function () {
+            return this._nativeStage.stageHeight / this.scaleY;
+        };
         GRoot.prototype.showWindow = function (win) {
             this.addChild(win);
             win.requestFocus();
@@ -11484,9 +11514,9 @@ var fairygui;
             this._nativeStage.addEventListener(egret.TouchEvent.TOUCH_END, this.__stageMouseUpCapture, this, true);
             this._nativeStage.addEventListener(egret.TouchEvent.TOUCH_MOVE, this.__stageMouseMoveCapture, this, true);
             this._modalLayer = new fairygui.GGraph();
-            this._modalLayer.setSize(this.width, this.height);
+            this._modalLayer.setSize(this._nativeStage.stageWidth, this._nativeStage.stageHeight);
             this._modalLayer.drawRect(0, 0, 0, fairygui.UIConfig.modalLayerColor, fairygui.UIConfig.modalLayerAlpha);
-            this._modalLayer.addRelation(this, fairygui.RelationType.Size);
+            //this._modalLayer.addRelation(this, RelationType.Size);
             this.displayObject.stage.addEventListener(egret.Event.RESIZE, this.__winResize, this);
             this.__winResize(null);
         };
@@ -11545,7 +11575,19 @@ var fairygui;
             GRoot.touchDown = false;
         };
         GRoot.prototype.__winResize = function (evt) {
-            this.setSize(this._nativeStage.stageWidth, this._nativeStage.stageHeight);
+            if (!this._designWidth || !this._designHeight) {
+                this.setSize(this._nativeStage.stageWidth, this._nativeStage.stageHeight);
+            }
+            else {
+                var scaleX = this._nativeStage.stageWidth / this.width;
+                var scaleY = this._nativeStage.stageHeight / this.height;
+                var scale = scaleX < scaleY ? scaleX : scaleY;
+                GRoot.contentScaleFactor = scale;
+                this.setScale(scale, scale);
+                this.setXY(this._nativeStage.stageWidth / 2 - this.width * scale / 2, this._nativeStage.stageHeight / 2 - this.height * scale / 2);
+            }
+            this._modalLayer.setSize(this._nativeStage.stageWidth / this.scaleX, this._nativeStage.stageHeight / this.scaleY);
+            this._modalLayer.setXY(this.width / 2 - this._modalLayer.width / 2, this.height / 2 - this._modalLayer.height / 2);
             //console.info("screen size=" + w + "x" + h + "/" + this.width + "x" + this.height);
         };
         GRoot.contentScaleFactor = 1;
