@@ -18,6 +18,7 @@ module fairygui {
         public tileGridIndice: number = 0;
         public smoothing: boolean;
         public texture: egret.Texture;
+        public textureUrl: string;
 
         //movieclip
         public interval: number = 0;

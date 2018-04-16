@@ -878,6 +878,7 @@ declare module fairygui {
         tileGridIndice: number;
         smoothing: boolean;
         texture: egret.Texture;
+        textureUrl: string;
         interval: number;
         repeatDelay: number;
         swing: boolean;
@@ -1327,7 +1328,10 @@ declare module fairygui {
         private _updatingLayout;
         private static _errorSignPool;
         private _matrix;
+        private _loadingUrl;
+        private _mask;
         constructor();
+        mask: egret.DisplayObject | egret.Rectangle;
         private getColorMatrix();
         protected createDisplayObject(): void;
         dispose(): void;
@@ -1345,9 +1349,9 @@ declare module fairygui {
         readonly content: egret.Bitmap | fairygui.MovieClip;
         texture: egret.Texture;
         protected loadContent(): void;
-        protected loadFromPackage(itemURL: string): void;
+        protected loadFromPackage(itemURL: string): Promise<void>;
         private switchToMovieMode(value);
-        protected loadExternal(): void;
+        protected loadExternal(): Promise<void>;
         protected freeExternal(texture: egret.Texture): void;
         protected onExternalLoadSuccess(texture: egret.Texture): void;
         protected onExternalLoadFailed(): void;
@@ -1504,7 +1508,7 @@ declare module fairygui {
         static workCount: number;
         static inst: GTimers;
         private static FPS24;
-        private static FPS30;
+        static FPS30: number;
         constructor();
         private getItem();
         private findItem(callback, thisObj);

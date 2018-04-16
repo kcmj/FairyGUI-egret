@@ -16,7 +16,7 @@ module fairygui {
         public static inst: GTimers = new GTimers();
 
         private static FPS24: number = 1000 / 24;
-        private static FPS30: number = 1000 / 30;
+        public static FPS30: number = 1000 / 30;
 
         public constructor() {
             this._items = new Array<TimerItem>();

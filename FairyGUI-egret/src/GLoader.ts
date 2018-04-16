@@ -30,6 +30,8 @@ module fairygui {
         private static _errorSignPool: GObjectPool = new GObjectPool();
 
         private _matrix: egret.ColorMatrixFilter;
+        private _loadingUrl: string;
+        private _mask: egret.DisplayObject | egret.Rectangle;
 
         public constructor() {
             super();
@@ -43,6 +45,16 @@ module fairygui {
 
             this._gearAnimation = new GearAnimation(this);
             this._gearColor = new GearColor(this);
+        }
+
+        public get mask(): egret.DisplayObject | egret.Rectangle {
+            return this._mask;
+        }
+        public set mask(val:egret.DisplayObject | egret.Rectangle) {
+            this._mask = val;
+            if (this._content) {
+                this._content.mask = val;
+            }
         }
 
         private getColorMatrix(): egret.ColorMatrixFilter {
@@ -244,7 +256,7 @@ module fairygui {
                 this.loadExternal();
         }
 
-        protected loadFromPackage(itemURL: string) {
+        protected async loadFromPackage(itemURL: string) {
             this._contentItem = UIPackage.getItemByURL(itemURL);
             if (this._contentItem != null) {
                 this._contentItem.load();
@@ -254,7 +266,31 @@ module fairygui {
 
                 if (this._contentItem.type == PackageItemType.Image) {
                     if (this._contentItem.texture == null) {
-                        this.setErrorState();
+                        if (!this._contentItem.textureUrl) {
+                            this.setErrorState();
+                            return;
+                        }
+
+                        this._loadingUrl = this._contentItem.textureUrl;
+                        let res: any;
+                        try {
+                            res = await RES.getResAsync(this._contentItem.textureUrl);
+                        } catch(e) {
+                            console.error("loader load res err ", e)
+                        }
+
+                        if (this._contentItem == null) {
+                            return;
+                        }
+
+                        if (!res) {
+                            this.setErrorState();
+                        } else {
+                            if (this._loadingUrl == this._contentItem.textureUrl) {
+                                this.__getResCompleted(res, this._contentItem.textureUrl);
+                            }
+                        }
+                        //this.setErrorState();
                     }
                     else {
                         this.switchToMovieMode(false);
@@ -300,8 +336,24 @@ module fairygui {
             this._container.addChild(this._content);
         }
 
-        protected loadExternal(): void {
-            RES.getResAsync(this._url, this.__getResCompleted, this);
+        protected async loadExternal() {
+            let _url = this._url;
+            this._loadingUrl = this._url;
+            let res: any;
+            try {
+                res = await RES.getResAsync(_url);
+            } catch(e) {
+                console.error("loader loadExternal res err ", e)
+            }
+
+            if (!res) {
+                this.setErrorState();
+            } else {
+                if (this._loadingUrl == _url) {
+                    this.__getResCompleted(res, _url);
+                }
+            }
+            //RES.getResAsync(this._url, this.__getResCompleted, this);
         }
 
         protected freeExternal(texture: egret.Texture): void {
@@ -319,6 +371,9 @@ module fairygui {
             (<egret.Bitmap>this._content).fillMode = egret.BitmapFillMode.SCALE;
             this._contentSourceWidth = texture.textureWidth;
             this._contentSourceHeight = texture.textureHeight;
+            if (this._mask) {
+                this._content.mask = this._mask;
+            }
             this.updateLayout();
         }
 

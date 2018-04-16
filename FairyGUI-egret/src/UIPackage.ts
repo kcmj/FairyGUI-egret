@@ -450,11 +450,16 @@ module fairygui {
             switch (item.type) {
                 case PackageItemType.Image:
                     if (!item.decoded) {
-                        item.decoded = true;
                         //var sprite: AtlasSprite = this._sprites[item.id];
                         //if (sprite != null)
                             //item.texture = this.createSpriteTexture(sprite);
-                        item.texture = RES.getRes(this._resKey + "_" + item.name + "_png");
+                        if (!item.textureUrl) {
+                            item.textureUrl = this._resKey + "_" + item.name + "_png";
+                        }
+                        item.texture = RES.getRes(item.textureUrl);
+                        if (item.texture) {
+                            item.decoded = true;
+                        }
                     }
                     return item.texture;
 
