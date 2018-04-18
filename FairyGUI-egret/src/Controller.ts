@@ -23,6 +23,13 @@ module fairygui {
             this._previousIndex = -1;
         }
 
+        public addAction(act:ControllerAction) {
+            if (!this._actions) {
+                this._actions = new Array<ControllerAction>();
+            }
+            this._actions.push(act);
+        }
+
         public dispose():void {
 
         }

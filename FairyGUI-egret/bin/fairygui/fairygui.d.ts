@@ -640,6 +640,7 @@ declare module fairygui {
         changing: boolean;
         private static _nextPageId;
         constructor();
+        addAction(act: ControllerAction): void;
         dispose(): void;
         name: string;
         readonly parent: GComponent;
@@ -2039,5 +2040,13 @@ declare module fairygui {
         private internalCreateObject(item);
         private collectComponentChildren(item);
         private run();
+    }
+}
+declare module fairygui {
+    class PlaySoundAction extends ControllerAction {
+        private _sound;
+        private _soundChannel;
+        constructor(soundRes: string);
+        protected enter(controller: Controller): void;
     }
 }

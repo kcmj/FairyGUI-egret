@@ -4023,6 +4023,12 @@ var fairygui;
             _this._previousIndex = -1;
             return _this;
         }
+        Controller.prototype.addAction = function (act) {
+            if (!this._actions) {
+                this._actions = new Array();
+            }
+            this._actions.push(act);
+        };
         Controller.prototype.dispose = function () {
         };
         Object.defineProperty(Controller.prototype, "name", {
@@ -15470,10 +15476,13 @@ var fairygui;
                 case fairygui.PackageItemType.Sound:
                     if (!item.decoded) {
                         item.decoded = true;
-                        var fileName = (item.file != null && item.file.length > 0) ? item.file : (item.id + ".mp3");
-                        item.sound = RES.getRes(this._resKey + "@" + fairygui.ToolSet.getFileName(fileName));
-                        if (!item.sound)
-                            item.sound = RES.getRes(this._resKey + "@" + fileName.replace("\.", "_"));
+                        item.sound = RES.getRes(item.name + "_mp3");
+                        if (!item.sound) {
+                            var fileName = (item.file != null && item.file.length > 0) ? item.file : (item.id + ".mp3");
+                            item.sound = RES.getRes(this._resKey + "@" + fairygui.ToolSet.getFileName(fileName));
+                            if (!item.sound)
+                                item.sound = RES.getRes(this._resKey + "@" + fileName.replace("\.", "_"));
+                        }
                     }
                     return item.sound;
                 case fairygui.PackageItemType.Font:
@@ -16314,4 +16323,28 @@ var fairygui;
     }());
     fairygui.AsyncOperation = AsyncOperation;
     __reflect(AsyncOperation.prototype, "fairygui.AsyncOperation");
+})(fairygui || (fairygui = {}));
+var fairygui;
+(function (fairygui) {
+    var PlaySoundAction = (function (_super) {
+        __extends(PlaySoundAction, _super);
+        function PlaySoundAction(soundRes) {
+            var _this = _super.call(this) || this;
+            RES.getResAsync(soundRes).then(function (sound) {
+                _this._sound = sound;
+            });
+            return _this;
+        }
+        PlaySoundAction.prototype.enter = function (controller) {
+            if (this._soundChannel) {
+                this._soundChannel.stop();
+            }
+            if (this._sound) {
+                this._soundChannel = this._sound.play(0, 1);
+            }
+        };
+        return PlaySoundAction;
+    }(fairygui.ControllerAction));
+    fairygui.PlaySoundAction = PlaySoundAction;
+    __reflect(PlaySoundAction.prototype, "fairygui.PlaySoundAction");
 })(fairygui || (fairygui = {}));

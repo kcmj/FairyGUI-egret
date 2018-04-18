@@ -476,10 +476,13 @@ module fairygui {
                 case PackageItemType.Sound:
                     if (!item.decoded) {
                         item.decoded = true;
-                        var fileName: string = (item.file != null && item.file.length > 0) ? item.file : (item.id + ".mp3");
-                        item.sound = RES.getRes(this._resKey + "@" + ToolSet.getFileName(fileName));
-                        if (!item.sound)
-                            item.sound = RES.getRes(this._resKey + "@" + fileName.replace("\.", "_"));
+                        item.sound = RES.getRes(`${item.name}_mp3`);
+                        if (!item.sound) {
+                            var fileName: string = (item.file != null && item.file.length > 0) ? item.file : (item.id + ".mp3");
+                            item.sound = RES.getRes(this._resKey + "@" + ToolSet.getFileName(fileName));
+                            if (!item.sound)
+                                item.sound = RES.getRes(this._resKey + "@" + fileName.replace("\.", "_"));
+                        }
                     }
                     return item.sound;
 
