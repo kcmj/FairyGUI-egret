@@ -6562,13 +6562,15 @@ var fairygui;
                 if (val == GButton.DOWN || val == GButton.SELECTED_OVER || val == GButton.SELECTED_DISABLED) {
                     if (!this._downScaled) {
                         this._downScaled = true;
-                        this.setScale(this.scaleX * this._downEffectValue, this.scaleY * this._downEffectValue);
+                        //this.setScale(this.scaleX * this._downEffectValue, this.scaleY * this._downEffectValue);
+                        this._scaleContext.setScale(this._scaleContext.scaleX * this._downEffectValue, this._scaleContext.scaleY * this._downEffectValue);
                     }
                 }
                 else {
                     if (this._downScaled) {
                         this._downScaled = false;
-                        this.setScale(this.scaleX / this._downEffectValue, this.scaleY / this._downEffectValue);
+                        //this.setScale(this.scaleX / this._downEffectValue, this.scaleY / this._downEffectValue);
+                        this._scaleContext.setScale(this._scaleContext.scaleX / this._downEffectValue, this._scaleContext.scaleY / this._downEffectValue);
                     }
                 }
             }
@@ -6612,8 +6614,20 @@ var fairygui;
                 this._downEffect = str == "dark" ? 1 : (str == "scale" ? 2 : 0);
                 str = xml.attributes.downEffectValue;
                 this._downEffectValue = parseFloat(str);
-                if (this._downEffect == 2)
-                    this.setPivot(0.5, 0.5);
+                if (this._downEffect == 2) {
+                    var scaleContext = new fairygui.GObject();
+                    scaleContext.setDisplayObject(this._container);
+                    scaleContext.setSize(this.width, this.height);
+                    scaleContext.setPivot(0.5, 0.5);
+                    this._scaleContext = scaleContext;
+                    //this.setPivot(0.5, 0.5);
+                    var touchMask = new egret.Shape();
+                    touchMask.graphics.beginFill(0x000000, 0);
+                    touchMask.graphics.drawRect(0, 0, this.width, this.height);
+                    touchMask.graphics.endFill();
+                    touchMask.touchEnabled = true;
+                    this._rootContainer.addChild(touchMask);
+                }
             }
             this._buttonController = this.getController("button");
             this._titleObject = this.getChild("title");
@@ -6735,6 +6749,24 @@ var fairygui;
             else {
                 if (this._relatedController)
                     this._relatedController.selectedPageId = this._pageOption.id;
+            }
+        };
+        GButton.prototype.setupScroll = function (scrollBarMargin, scroll, scrollBarDisplay, flags, vtScrollBarRes, hzScrollBarRes, headerRes, footerRes) {
+            _super.prototype.setupScroll.call(this, scrollBarMargin, scroll, scrollBarDisplay, flags, vtScrollBarRes, hzScrollBarRes, headerRes, footerRes);
+            if (this._rootContainer == this._container) {
+                this._container = new egret.DisplayObjectContainer();
+                this._container.width = this._rootContainer.width;
+                this._container.height = this._rootContainer.height;
+                this._rootContainer.addChild(this._container);
+            }
+        };
+        GButton.prototype.setupOverflow = function (overflow) {
+            _super.prototype.setupOverflow.call(this, overflow);
+            if (this._rootContainer == this._container) {
+                this._container = new egret.DisplayObjectContainer();
+                this._container.width = this._rootContainer.width;
+                this._container.height = this._rootContainer.height;
+                this._rootContainer.addChild(this._container);
             }
         };
         GButton.UP = "up";
@@ -16332,6 +16364,7 @@ var fairygui;
             var _this = _super.call(this) || this;
             RES.getResAsync(soundRes).then(function (sound) {
                 _this._sound = sound;
+            }).catch(function (e) {
             });
             return _this;
         }

@@ -116,7 +116,7 @@ declare module fairygui {
         addRelation(target: GObject, relationType: number, usePercent?: boolean): void;
         removeRelation(target: GObject, relationType?: number): void;
         readonly displayObject: egret.DisplayObject;
-        protected setDisplayObject(value: egret.DisplayObject): void;
+        setDisplayObject(value: egret.DisplayObject): void;
         parent: GComponent;
         removeFromParent(): void;
         readonly root: GRoot;
@@ -952,6 +952,7 @@ declare module fairygui {
         private _downEffectValue;
         private _downScaled;
         private _disabled;
+        private _scaleContext;
         private _down;
         private _over;
         static UP: string;
@@ -990,6 +991,8 @@ declare module fairygui {
         private __mousedown(evt);
         private __mouseup(evt);
         private __click(evt);
+        protected setupScroll(scrollBarMargin: Margin, scroll: ScrollType, scrollBarDisplay: ScrollBarDisplayType, flags: number, vtScrollBarRes: string, hzScrollBarRes: string, headerRes: string, footerRes: string): void;
+        protected setupOverflow(overflow: OverflowType): void;
     }
 }
 declare module fairygui {

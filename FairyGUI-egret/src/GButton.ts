@@ -5,7 +5,7 @@ module fairygui {
         protected _titleObject: GObject;
         protected _iconObject: GObject;
         protected _relatedController: Controller;
-
+        
         private _mode: ButtonMode;
         private _selected: boolean;
         private _title: string;
@@ -22,6 +22,7 @@ module fairygui {
         private _downEffectValue: number;
         private _downScaled: boolean;
         private _disabled: boolean;
+        private _scaleContext: GObject;
 
         private _down: boolean;
         private _over: boolean;
@@ -307,13 +308,15 @@ module fairygui {
                 if (val == GButton.DOWN || val == GButton.SELECTED_OVER || val == GButton.SELECTED_DISABLED) {
                     if (!this._downScaled) {
                         this._downScaled = true;
-                        this.setScale(this.scaleX * this._downEffectValue, this.scaleY * this._downEffectValue);
+                        //this.setScale(this.scaleX * this._downEffectValue, this.scaleY * this._downEffectValue);
+                        this._scaleContext.setScale(this._scaleContext.scaleX * this._downEffectValue, this._scaleContext.scaleY * this._downEffectValue);
                     }
                 }
                 else {
                     if (this._downScaled) {
                         this._downScaled = false;
-                        this.setScale(this.scaleX / this._downEffectValue, this.scaleY / this._downEffectValue);
+                        //this.setScale(this.scaleX / this._downEffectValue, this.scaleY / this._downEffectValue);
+                        this._scaleContext.setScale(this._scaleContext.scaleX / this._downEffectValue, this._scaleContext.scaleY / this._downEffectValue);
                     }
                 }
             }
@@ -364,8 +367,21 @@ module fairygui {
                 this._downEffect = str == "dark" ? 1 : (str == "scale" ? 2 : 0);
                 str = xml.attributes.downEffectValue;
                 this._downEffectValue = parseFloat(str);
-                if (this._downEffect == 2)
-                    this.setPivot(0.5, 0.5);
+                if (this._downEffect == 2) {
+                    let scaleContext = new GObject();
+                    scaleContext.setDisplayObject(this._container);
+                    scaleContext.setSize(this.width, this.height);
+                    scaleContext.setPivot(0.5, 0.5);
+                    this._scaleContext = scaleContext;
+                    //this.setPivot(0.5, 0.5);
+
+                    let touchMask = new egret.Shape();
+                    touchMask.graphics.beginFill(0x000000, 0);
+                    touchMask.graphics.drawRect(0, 0, this.width, this.height);
+                    touchMask.graphics.endFill();
+                    touchMask.touchEnabled = true;
+                    this._rootContainer.addChild(touchMask);
+                }
             }
 
             this._buttonController = this.getController("button");
@@ -509,6 +525,35 @@ module fairygui {
             else {
                 if (this._relatedController)
                     this._relatedController.selectedPageId = this._pageOption.id;
+            }
+        }
+
+        protected setupScroll(scrollBarMargin: Margin,
+            scroll: ScrollType,
+            scrollBarDisplay: ScrollBarDisplayType,
+            flags: number,
+            vtScrollBarRes: string,
+            hzScrollBarRes: string,
+            headerRes: string,
+            footerRes: string): void {
+
+            super.setupScroll(scrollBarMargin, scroll, scrollBarDisplay, flags, vtScrollBarRes, hzScrollBarRes, 
+                headerRes, footerRes);
+            if (this._rootContainer == this._container) {
+                this._container = new egret.DisplayObjectContainer();
+                this._container.width = this._rootContainer.width;
+                this._container.height = this._rootContainer.height;
+                this._rootContainer.addChild(this._container);
+            }
+        }
+
+        protected setupOverflow(overflow: OverflowType): void {
+            super.setupOverflow(overflow);
+            if (this._rootContainer == this._container) {
+                this._container = new egret.DisplayObjectContainer();
+                this._container.width = this._rootContainer.width;
+                this._container.height = this._rootContainer.height;
+                this._rootContainer.addChild(this._container);
             }
         }
     }

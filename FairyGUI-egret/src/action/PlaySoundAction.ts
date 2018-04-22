@@ -8,6 +8,8 @@ module fairygui {
             super();
             RES.getResAsync(soundRes).then(sound => {
                 this._sound = sound;
+            }).catch(e => {
+
             });
         }
 

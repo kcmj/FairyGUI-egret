@@ -658,7 +658,7 @@ module fairygui {
             return this._displayObject;
         }
 
-        protected setDisplayObject(value: egret.DisplayObject): void {
+        public setDisplayObject(value: egret.DisplayObject): void {
             this._displayObject = value;
         }
 
