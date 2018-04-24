@@ -136,8 +136,13 @@ module fairygui {
                 if (str)
                     this.titleColor = ToolSet.convertFromHtmlColor(str);
                 str = xml.attributes.titleFontSize;
-                if (str)
-                    this.titleFontSize = parseInt(str);
+                if (str) {
+                    if (str == "0") {
+                        this.icon = "";
+                    } else {
+                        this.titleFontSize = parseInt(str);
+                    }
+                }
 
                 if (this._titleObject instanceof GTextInput) {
                     str = xml.attributes.prompt;
