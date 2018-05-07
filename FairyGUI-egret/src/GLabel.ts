@@ -138,7 +138,7 @@ module fairygui {
                 str = xml.attributes.titleFontSize;
                 if (str) {
                     if (str == "0") {
-                        this.icon = "";
+                        this.text = "";
                     } else {
                         this.titleFontSize = parseInt(str);
                     }

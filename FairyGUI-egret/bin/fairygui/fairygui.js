@@ -8331,8 +8331,14 @@ var fairygui;
                 if (str)
                     this.titleColor = fairygui.ToolSet.convertFromHtmlColor(str);
                 str = xml.attributes.titleFontSize;
-                if (str)
-                    this.titleFontSize = parseInt(str);
+                if (str) {
+                    if (str == "0") {
+                        this.text = "";
+                    }
+                    else {
+                        this.titleFontSize = parseInt(str);
+                    }
+                }
                 if (this._titleObject instanceof fairygui.GTextInput) {
                     str = xml.attributes.prompt;
                     if (str)
